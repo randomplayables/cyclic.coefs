@@ -1,0 +1,41 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# cyclic.coefs
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+The goal of cyclic.coefs is to explore sequences with periodic coefficients.
+
+## Installation
+
+You can install the development version of cyclic.coefs from [GitHub](https://github.com/) with:
+
+``` r
+# install.packages("pak")
+pak::pak("randomplayables/cyclic.coefs")
+```
+
+## Basic Example
+
+This is a basic example which shows you how to use the combine() function.
+
+```{r example}
+library(cyclic.coefs)
+
+combine(.f = \(x) (1:12)/12,
+                    .g = \(x) unlist(lapply(1:36, \(x)exp(-x))))
+```

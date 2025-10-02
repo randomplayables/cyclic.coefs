@@ -1,9 +1,13 @@
 Package: cyclic.coefs
-Title: What the Package Does (One Line, Title Case)
+Title: Explore Series with Periodic Coefficients
 Version: 0.0.0.9000
-Authors@R: 
-    person("First", "Last", , "first.last@example.com", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Authors@R: c(
+    person("Mackson", "Ncube", , "macksonncube.stats@gmail.com", role = c("aut", "cre")),
+    person("mightymetrika, LLC", role = c("cph", "fnd"))
+  )
+Description: When studying series, it is important to understand how changing the
+    coefficients changes the properties of the series. The 'cyclic.coefs' package
+    was designed to help study series with periodic coefficients.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
