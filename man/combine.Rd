@@ -15,11 +15,11 @@ combine(
 \item{.g}{A function returning a sequence}
 }
 \value{
-A list containing four elements:
-\item{fg_dot}{The dot product of the .f and .g sequences}
-\item{fg_terms}{The individual terms of the fg_dot series}
-\item{f_seq}{The .f sequence}
-\item{g_seq}{The .g sequence}
+An object of class \code{combine} containing:
+\item{fg_dot}{The dot product of f and g: sum of \code{f[i]*g[i]}}
+\item{fg_terms}{Element-wise products: \code{f[i]*g[i]} for each i}
+\item{f_seq}{The periodic coefficient sequence}
+\item{g_seq}{The base sequence}
 }
 \description{
 This function combines two sequences. It is designed to explore what series
