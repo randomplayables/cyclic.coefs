@@ -9,7 +9,9 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.path = "man/figures/README-",
-  out.width = "100%"
+  out.width = "100%",
+  fig.width = 10,
+  fig.height = 8
 )
 ```
 
@@ -18,24 +20,68 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of cyclic.coefs is to explore sequences with periodic coefficients.
+**cyclic.coefs** provides tools for exploring series with periodic coefficients through dot products. The package implements the mathematical pattern:
+
+$$\sum_{i=1}^{n} f_i \cdot g_i$$
+
+where **f** is a periodic sequence (sine, cosine, triangle wave, etc.) and **g** is a base sequence (harmonic, geometric, exponential, etc.). This framework is fundamental to Fourier analysis and series expansions.
 
 ## Installation
 
-You can install the development version of cyclic.coefs from [GitHub](https://github.com/) with:
-
+Install the development version from GitHub:
 ``` r
 # install.packages("pak")
 pak::pak("randomplayables/cyclic.coefs")
 ```
 
-## Basic Example
+## Quick Start
 
-This is a basic example which shows you how to use the combine() function.
+Combine a sine wave with exponential decay:
 
 ```{r example}
 library(cyclic.coefs)
 
-combine(.f = \(x) (1:12)/12,
-                    .g = \(x) unlist(lapply(1:36, \(x)exp(-x))))
+# Create a combination
+res <- combine(
+  .f = \(x) sin_cyc(),
+  .g = \(x) exp_decay_g(rate = 0.5)
+)
+
+# View results
+print(res)
+```
+
+
+Visualize the interaction:
+
+```{r plot, fig.height=6}
+plot(res)
+```
+
+
+## Key Functions
+
+**Periodic coefficients (.f functions):**
+- `sin_cyc()`, `cos_cyc()` - Trigonometric sequences
+- `triangle_cyc()`, `sawtooth_cyc()`, `square_cyc()` - Geometric waves
+- `pulse_cyc()` - Rectangular pulse waves
+- `complex_cyc()` - Complex exponentials for Fourier analysis
+
+**Base sequences (.g functions):**
+- `harmonic_g()` - Harmonic series (1/n)
+- `power_g()` - Power sequences (n^p)
+- `geometric_g()` - Geometric sequences (r^n)
+- `exp_decay_g()` - Exponential decay
+- `fibonacci_g()`, `binomial_g()`, and more
+
+## Classic Example: Fourier-like Series
+
+```{r fourier}
+# Sine with harmonic coefficients: Σ(1/n)sin(nx)
+fourier_like <- combine(
+  .f = \(x) sin_cyc(seq(0, 2*pi, length.out = 33)[-33]),
+  .g = \(x) harmonic_g(1:32)
+)
+
+summary(fourier_like)
 ```

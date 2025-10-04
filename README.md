@@ -7,57 +7,101 @@
 
 <!-- badges: end -->
 
-The goal of cyclic.coefs is to explore sequences with periodic
-coefficients.
+**cyclic.coefs** provides tools for exploring series with periodic
+coefficients through dot products. The package implements the
+mathematical pattern:
+
+$$\sum_{i=1}^{n} f_i \cdot g_i$$
+
+where **f** is a periodic sequence (sine, cosine, triangle wave, etc.)
+and **g** is a base sequence (harmonic, geometric, exponential, etc.).
+This framework is fundamental to Fourier analysis and series expansions.
 
 ## Installation
 
-You can install the development version of cyclic.coefs from
-[GitHub](https://github.com/) with:
+Install the development version from GitHub:
 
 ``` r
 # install.packages("pak")
 pak::pak("randomplayables/cyclic.coefs")
 ```
 
-## Basic Example
+## Quick Start
 
-This is a basic example which shows you how to use the combine()
-function.
+Combine a sine wave with exponential decay:
 
 ``` r
 library(cyclic.coefs)
 
-combine(.f = \(x) (1:12)/12,
-                    .g = \(x) unlist(lapply(1:36, \(x)exp(-x))))
-#> $fg_dot
-#> [1] 0.07671922
+# Create a combination
+res <- combine(
+  .f = \(x) sin_cyc(),
+  .g = \(x) exp_decay_g(rate = 0.5)
+)
+
+# View results
+print(res)
+#> Cyclic Coefficient Series Combination
+#> ======================================
 #> 
-#> $fg_terms
-#>  [1] 3.065662e-02 2.255588e-02 1.244677e-02 6.105213e-03 2.807478e-03
-#>  [6] 1.239376e-03 5.319311e-04 2.236418e-04 9.255735e-05 3.783327e-05
-#> [11] 1.530989e-05 6.144212e-06 1.883608e-07 1.385881e-07 7.647558e-08
-#> [16] 3.751172e-08 1.724974e-08 7.614990e-09 3.268298e-09 1.374102e-09
-#> [21] 5.686920e-10 2.324557e-10 9.406723e-11 3.775135e-11 1.157329e-12
-#> [26] 8.515148e-13 4.698822e-13 2.304800e-13 1.059861e-13 4.678811e-14
-#> [31] 2.008112e-14 8.442777e-15 3.494165e-15 1.428257e-15 5.779690e-16
-#> [36] 2.319523e-16
+#> Dot Product (f * g): 0.5099433 
+#> Sequence Length:     32 
 #> 
-#> $f_seq
-#>  [1] 0.08333333 0.16666667 0.25000000 0.33333333 0.41666667 0.50000000
-#>  [7] 0.58333333 0.66666667 0.75000000 0.83333333 0.91666667 1.00000000
-#> [13] 0.08333333 0.16666667 0.25000000 0.33333333 0.41666667 0.50000000
-#> [19] 0.58333333 0.66666667 0.75000000 0.83333333 0.91666667 1.00000000
-#> [25] 0.08333333 0.16666667 0.25000000 0.33333333 0.41666667 0.50000000
-#> [31] 0.58333333 0.66666667 0.75000000 0.83333333 0.91666667 1.00000000
+#> First 6 element-wise products (f[i]*g[i]):
+#> [1]  0.000000e+00  2.601300e-01  2.231302e-01  9.569650e-02  1.005218e-17
+#> [6] -3.520477e-02
+#> ... (26 more terms)
+```
+
+Visualize the interaction:
+
+``` r
+plot(res)
+```
+
+<img src="man/figures/README-plot-1.png" width="100%" />
+
+## Key Functions
+
+**Periodic coefficients (.f functions):** - `sin_cyc()`, `cos_cyc()` -
+Trigonometric sequences - `triangle_cyc()`, `sawtooth_cyc()`,
+`square_cyc()` - Geometric waves - `pulse_cyc()` - Rectangular pulse
+waves - `complex_cyc()` - Complex exponentials for Fourier analysis
+
+**Base sequences (.g functions):** - `harmonic_g()` - Harmonic series
+(1/n) - `power_g()` - Power sequences (n^p) - `geometric_g()` -
+Geometric sequences (r^n) - `exp_decay_g()` - Exponential decay -
+`fibonacci_g()`, `binomial_g()`, and more
+
+## Classic Example: Fourier-like Series
+
+``` r
+# Sine with harmonic coefficients: Σ(1/n)sin(nx)
+fourier_like <- combine(
+  .f = \(x) sin_cyc(seq(0, 2*pi, length.out = 33)[-33]),
+  .g = \(x) harmonic_g(1:32)
+)
+
+summary(fourier_like)
+#> Cyclic Coefficient Series Combination
+#> ======================================
 #> 
-#> $g_seq
-#>  [1] 3.678794e-01 1.353353e-01 4.978707e-02 1.831564e-02 6.737947e-03
-#>  [6] 2.478752e-03 9.118820e-04 3.354626e-04 1.234098e-04 4.539993e-05
-#> [11] 1.670170e-05 6.144212e-06 2.260329e-06 8.315287e-07 3.059023e-07
-#> [16] 1.125352e-07 4.139938e-08 1.522998e-08 5.602796e-09 2.061154e-09
-#> [21] 7.582560e-10 2.789468e-10 1.026188e-10 3.775135e-11 1.388794e-11
-#> [26] 5.109089e-12 1.879529e-12 6.914400e-13 2.543666e-13 9.357623e-14
-#> [31] 3.442477e-14 1.266417e-14 4.658886e-15 1.713908e-15 6.305117e-16
-#> [36] 2.319523e-16
+#> Dot Product (f * g): 0.9785916 
+#> 
+#> Periodic Sequence (f):
+#>   Length:   32 
+#>   Range:   [-1, 1]
+#>   Mean:     2.170098e-18 
+#>   SD:       0.7184212 
+#> 
+#> Base Sequence (g):
+#>   Length:   32 
+#>   Range:   [0.03125, 1]
+#>   Mean:     0.126828 
+#>   SD:       0.1883234 
+#> 
+#> Element-wise Products (f[i]*g[i]):
+#>   Range:   [-0.04086605, 0.1414214]
+#>   Mean:     0.03058099 
+#>   SD:       0.06703437
 ```
