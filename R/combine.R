@@ -109,10 +109,10 @@ summary.combine <- function(object, ...) {
 #' Plot Method for combine Objects
 #'
 #' @param x A combine object
-#' @param legend_pos Position for the legend in plot 4 (default "topleft")
+#' @param legend_pos Position for legend. Either a keyword ("right", "topleft", etc.) or numeric coordinates.
 #' @param ... Additional arguments (unused)
 #' @export
-plot.combine <- function(x, legend_pos = "topleft", ...) {
+plot.combine <- function(x, legend_pos = "right", ...) {
   # Set up 2x2 plot layout
   old_par <- graphics::par(mfrow = c(2, 2), mar = c(4, 4, 2, 1))
   on.exit(graphics::par(old_par))
@@ -134,10 +134,10 @@ plot.combine <- function(x, legend_pos = "topleft", ...) {
        xlab = "Index", ylab = "Value", main = "Sequence Comparison")
   graphics::lines(idx, x$f_seq, col = "blue", lwd = 2)
   graphics::lines(idx, x$fg_terms, col = "purple", lwd = 2, lty = 2)
-  graphics::legend("topleft",
-         legend = c("f (periodic)", "g (base)", "f*g (product)"),
-         col = c("blue", "red", "purple"),
-         lty = c(1, 1, 2), lwd = 2, cex = 0.7, bg = "white")
+  graphics::legend(legend_pos,
+                   legend = c("f (periodic)", "g (base)", "f*g (product)"),
+                   col = c("blue", "red", "purple"),
+                   lty = c(1, 1, 2), lwd = 2, cex = 0.7, bg = "white")
   graphics::grid()
 
   # Plot 4: Running dot product

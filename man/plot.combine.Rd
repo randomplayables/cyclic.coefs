@@ -4,12 +4,12 @@
 \alias{plot.combine}
 \title{Plot Method for combine Objects}
 \usage{
-\method{plot}{combine}(x, legend_pos = "topleft", ...)
+\method{plot}{combine}(x, legend_pos = "right", ...)
 }
 \arguments{
 \item{x}{A combine object}
 
-\item{legend_pos}{Position for the legend in plot 4 (default "topleft")}
+\item{legend_pos}{Position for legend. Either a keyword ("right", "topleft", etc.) or numeric coordinates.}
 
 \item{...}{Additional arguments (unused)}
 }
