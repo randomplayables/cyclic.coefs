@@ -5,9 +5,12 @@ Authors@R: c(
     person("Mackson", "Ncube", , "macksonncube.stats@gmail.com", role = c("aut", "cre")),
     person("mightymetrika, LLC", role = c("cph", "fnd"))
   )
-Description: When studying series, it is important to understand how changing the
-    coefficients changes the properties of the series. The 'cyclic.coefs' package
-    was designed to help study series with periodic coefficients.
+Description: Provides tools for exploring series with periodic coefficients through
+    dot products of the form sum(f[i]*g[i]). Includes pre-built periodic sequences
+    (sine, cosine, triangle, square waves) and base sequences (harmonic, geometric,
+    exponential decay, Fibonacci). Useful for studying Fourier-like series, signal
+    analysis, and understanding how periodic coefficients affect series convergence.
+    Results can be visualized with built-in plotting methods.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
