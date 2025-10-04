@@ -111,7 +111,10 @@ sawtooth_cyc <- function(inputs = seq(0, 1, length.out = 9)[-9]) {
 #' @export
 pulse_cyc <- function(inputs = seq(0, 1, length.out = 9)[-9],
                       duty_cycle = 0.5) {
-  return(as.numeric((inputs %% 1) < duty_cycle))
+  if (!is.numeric(duty_cycle) || length(duty_cycle) != 1L || duty_cycle <= 0 || duty_cycle >= 1) {
+    stop("duty_cycle must be a single numeric in (0, 1).", call. = FALSE)
+  }
+  as.numeric((inputs %% 1) < duty_cycle)
 }
 
 #' Square Wave Sequence

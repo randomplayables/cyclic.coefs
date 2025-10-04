@@ -20,8 +20,9 @@ combine <- function(.f = \(x) (1:4)/4,
                     .g = \(x) unlist(lapply(1:8, \(x)2^x))){
 
   # Get vectors
-  tryCatch({ .f_vec <- .f()}, error = function(e) e)
-  tryCatch({ .g_vec <- .g()}, error = function(e) e)
+  .f_vec <- tryCatch(.f(), error = function(e) stop("combine(.f) failed: ", conditionMessage(e), call. = FALSE))
+  .g_vec <- tryCatch(.g(), error = function(e) stop("combine(.g) failed: ", conditionMessage(e), call. = FALSE))
+
 
   # Get lengths
   .f_len <- length(.f_vec)

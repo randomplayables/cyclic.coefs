@@ -22,7 +22,7 @@ library(cyclic.coefs)
 
 ## Understanding Pattern Tiling
 
-The `combine()` function automatically tiles the shorter sequence to match the longer one using `rep_len()`. This means a short periodic pattern (like an 8-point sine wave) seamlessly repeats across a longer sequence (like 100 terms), creating a natural framework for exploring series with periodic coefficients.
+The `combine()` recycles `.f` to match the length of `.g` (the base sequence). To tile both ways, pass a .g of the desired final length. This means a short periodic pattern (like an 8-point sine wave) seamlessly repeats across a longer base sequence (like 100 terms), creating a natural framework for exploring series with periodic coefficients.
 
 ## 1. Orthogonality: When Periodic Functions Cancel Out
 
