@@ -22,8 +22,8 @@ An object of class \code{combine} containing:
 \item{g_seq}{The base sequence}
 }
 \description{
-This function combines two sequences. It is designed to explore what series
-with periodic coefficients
+This function combines two sequences. It is designed to explore series
+with periodic coefficients.
 }
 \examples{
 combine()

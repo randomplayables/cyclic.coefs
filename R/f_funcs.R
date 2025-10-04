@@ -49,7 +49,7 @@ cos_cyc <- function(inputs = seq(0, 2*pi, length.out = 9)[-9],
     inputs <- inputs * (pi/180)
   }
 
-  # Return sine values
+  # Return cosine values
   return(cos(inputs))
 }
 
@@ -133,7 +133,7 @@ pulse_cyc <- function(inputs = seq(0, 1, length.out = 9)[-9],
 square_cyc <- function(inputs = seq(0, 2*pi, length.out = 9)[-9],
                        radians = TRUE) {
   if (!radians) inputs <- inputs * (pi/180)
-  return(sign(sin(inputs)))
+  return(ifelse(sin(inputs) >= 0, 1, -1))
 }
 
 

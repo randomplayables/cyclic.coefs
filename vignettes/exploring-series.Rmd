@@ -1,0 +1,176 @@
+---
+title: "exploring-series"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{exploring-series}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 10,
+  fig.height = 6
+)
+```
+
+```{r setup}
+library(cyclic.coefs)
+```
+
+## Understanding Pattern Tiling
+
+The `combine()` function automatically tiles the shorter sequence to match the longer one using `rep_len()`. This means a short periodic pattern (like an 8-point sine wave) seamlessly repeats across a longer sequence (like 100 terms), creating a natural framework for exploring series with periodic coefficients.
+
+## 1. Orthogonality: When Periodic Functions Cancel Out
+
+Sine and cosine are orthogonal - their dot product is zero:
+
+```{r orthogonal}
+# 8-point sine and cosine patterns
+ortho <- combine(
+  .f = \(x) sin_cyc(seq(0, 2*pi, length.out = 9)[-9]),  # 8 points
+  .g = \(x) cos_cyc(seq(0, 2*pi, length.out = 9)[-9])   # 8 points
+)
+print(ortho$fg_dot)  # ~ 0 (within numerical precision)
+plot(ortho)
+```
+
+The magic: orthogonality holds when both patterns tile evenly with aligned phases! An 8-point sine pattern repeats 4x across 32 cosine points. (This requires equal spacing and an integer number of complete periods.)
+
+```{r ortho_tiled}
+# Same 8-point sine pattern, but g is now 32 points long
+ortho_long <- combine(
+  .f = \(x) sin_cyc(seq(0, 2*pi, length.out = 9)[-9]),    # 8 points, tiles 4x
+  .g = \(x) cos_cyc(seq(0, 8*pi, length.out = 33)[-33])   # 32 points
+)
+print(ortho_long$fg_dot)  # Still ~ 0!
+plot(ortho_long)
+```
+
+## 2. The Basel Problem Connection
+
+The famous Basel problem states that Sum(1/n^2) = pi^2/6. A constant "pattern" tiles naturally:
+
+```{r basel}
+# 4-point constant pattern tiles 25x across 100 terms
+basel <- combine(
+  .f = \(x) rep(1, 4),  # Just 4 ones that repeat
+  .g = \(x) power_g(1:100, p = -2)
+)
+print(paste("Our sum:", round(basel$fg_dot, 4)))
+print(paste("pi^2/6:", round(pi^2/6, 4)))
+plot(basel)
+```
+
+## 3. Alternating Harmonic Series
+
+The alternating harmonic series converges to ln(2). A simple 2-point pattern creates the alternation:
+
+```{r alternating}
+# Just [1, -1] repeating creates the alternating pattern
+alt_harmonic <- combine(
+  .f = \(x) c(1, -1),  # 2-point pattern tiles 50x
+  .g = \(x) harmonic_g(1:100)
+)
+print(paste("Our sum:", round(alt_harmonic$fg_dot, 4)))
+print(paste("ln(2):", round(log(2), 4)))
+plot(alt_harmonic)
+```
+
+The beauty: a 2-element pattern encodes the entire alternating structure! This computes $\sum_{n=1}^{\infty} \frac{(-1)^{n+1}}{n} = \ln(2)$.
+
+## 4. Signal Windowing
+
+Apply an 8-point triangular window that repeats across an exponentially growing signal:
+
+```{r windowing}
+# 8-point triangle window tiles 4x across 32-point signal
+windowed <- combine(
+  .f = \(x) triangle_cyc(seq(0, 1, length.out = 9)[-9]),  # 8 points
+  .g = \(x) geometric_g(1:32, r = 1.1)  # Exponentially growing signal
+)
+plot(windowed)
+```
+
+Each window cycle smoothly weights its 8 values, creating a repeated envelope.
+
+## 5. Fibonacci Meets Trigonometry
+
+What happens when Fibonacci numbers meet an 8-point sine wave that repeats?
+
+```{r fibonacci_sine}
+# 8-point sine tiles across 64 Fibonacci numbers
+fib_sin <- combine(
+  .f = \(x) sin_cyc(seq(0, 2*pi, length.out = 9)[-9]),  # 8 points
+  .g = \(x) fibonacci_g(1:64)  # 8 complete sine cycles
+)
+plot(fib_sin)
+print(paste("Dot product:", round(fib_sin$fg_dot, 2)))
+```
+
+The rapid Fibonacci growth dominates, but the repeating sine creates oscillating contributions across cycles.
+
+## 6. Pulse Train Analysis
+
+Analyze how a 4-point pulse train samples an exponential decay when tiled 8 times:
+
+```{r pulse_sampling}
+# 4-point pulse (25% duty) tiles 8x across 32-point decay
+sampled <- combine(
+  .f = \(x) pulse_cyc(seq(0, 1, length.out = 5)[-5], duty_cycle = 0.25),  # 4 points
+  .g = \(x) exp_decay_g(1:32, rate = 0.1)
+)
+plot(sampled)
+```
+
+Only 1 out of every 4 points contributes - like a sample-and-hold circuit with periodic sampling.
+
+## 7. Complex Analysis: Fourier Transform Preview
+
+Complex exponentials are fundamental to Fourier analysis and are fully supported by the combine() function. The function preserves both real and imaginary components throughout the calculation. A 16-point complex pattern tiles 4x across 64 terms:
+
+```{r complex_fourier}
+# 16-point complex exponential tiles across 64-point geometric decay
+complex_series <- combine(
+  .f = \(x) complex_cyc(seq(0, 2*pi, length.out = 17)[-17]),  # 16 points
+  .g = \(x) geometric_g(1:64, r = 0.9)  # 4 complete rotations
+)
+print(paste("Real part:", round(Re(complex_series$fg_dot), 4)))
+print(paste("Imaginary part:", round(Im(complex_series$fg_dot), 4)))
+print(paste("Magnitude:", round(Mod(complex_series$fg_dot), 4)))
+
+# Custom visualization for complex series
+par(mfrow = c(2, 2), mar = c(4, 4, 2, 1))
+idx <- seq_along(complex_series$f_seq)
+
+# Plot 1: Real and imaginary parts of periodic sequence
+plot(idx, Re(complex_series$f_seq), type = "l", col = "blue", lwd = 2,
+     xlab = "Index", ylab = "Value", main = "Complex Exponential (f)")
+lines(idx, Im(complex_series$f_seq), col = "red", lwd = 2)
+legend("topright", legend = c("Real", "Imaginary"), 
+       col = c("blue", "red"), lty = 1, lwd = 2)
+grid()
+
+# Plot 2: Base sequence (real-valued)
+plot(idx, complex_series$g_seq, type = "l", col = "darkgreen", lwd = 2,
+     xlab = "Index", ylab = "g[i]", main = "Geometric Decay (g)")
+grid()
+
+# Plot 3: Real and imaginary parts of products
+plot(idx, Re(complex_series$fg_terms), type = "l", col = "blue", lwd = 2,
+     xlab = "Index", ylab = "Value", main = "Product Terms (f*g)")
+lines(idx, Im(complex_series$fg_terms), col = "red", lwd = 2)
+legend("topright", legend = c("Real", "Imaginary"), 
+       col = c("blue", "red"), lty = 1, lwd = 2)
+grid()
+
+# Plot 4: Magnitude of products
+plot(idx, Mod(complex_series$fg_terms), type = "l", col = "purple", lwd = 2,
+     xlab = "Index", ylab = "Magnitude", main = "Magnitude of Products")
+grid()
+```
+
+Each 16-point cycle completes one rotation around the unit circle. The complex result encodes both amplitude and phase - exactly the information a Fourier coefficient captures!

@@ -1,7 +1,7 @@
 #' Combine Two Sequences
 #'
-#' This function combines two sequences. It is designed to explore what series
-#' with periodic coefficients
+#' This function combines two sequences. It is designed to explore series
+#' with periodic coefficients.
 #'
 #' @param .f A function returning a (periodic) sequence
 #' @param .g A function returning a sequence
@@ -29,14 +29,15 @@ combine <- function(.f = \(x) (1:4)/4,
 
   if (.f_len != .g_len) .f_vec <- rep_len(.f_vec, .g_len)
 
-  # Get the terms
-  fg_terms <- vector(mode = "numeric", length(.g_len))
-  for (i in 1:.g_len){
-    fg_terms[[i]] <- .f_vec[[i]]*.g_vec[[i]]
+  # Get the terms (complex-safe pre-allocation)
+  is_comp <- is.complex(.f_vec) || is.complex(.g_vec)
+  fg_terms <- vector(mode = if (is_comp) "complex" else "numeric", length = .g_len)
+  for (i in seq_len(.g_len)) {
+    fg_terms[[i]] <- .f_vec[[i]] * .g_vec[[i]]
   }
 
-  # Get dot product
-  fg_dot <- as.numeric(.f_vec%*%.g_vec)
+  # Get dot product (complex-safe; avoid coercion)
+  fg_dot <- sum(.f_vec * .g_vec)
 
   # Return
   .ret <- list(fg_dot = fg_dot,
@@ -83,24 +84,31 @@ summary.combine <- function(object, ...) {
   cat("Cyclic Coefficient Series Combination\n")
   cat("======================================\n\n")
 
+  # Complex-safety: compute summaries on real parts if needed
+  has_complex <- is.complex(object$f_seq) || is.complex(object$g_seq) || is.complex(object$fg_terms)
+  f_seq <- if (has_complex) Re(object$f_seq) else object$f_seq
+  g_seq <- if (has_complex) Re(object$g_seq) else object$g_seq
+  fg_terms <- if (has_complex) Re(object$fg_terms) else object$fg_terms
+
   cat("Dot Product (f * g):", object$fg_dot, "\n\n")
+  if (has_complex) cat("(Complex inputs detected; summaries below are over the REAL parts.)\n\n")
 
   cat("Periodic Sequence (f):\n")
-  cat("  Length:  ", length(object$f_seq), "\n")
-  cat("  Range:   [", min(object$f_seq), ", ", max(object$f_seq), "]\n", sep = "")
-  cat("  Mean:    ", mean(object$f_seq), "\n")
-  cat("  SD:      ", stats::sd(object$f_seq), "\n\n")
+  cat("  Length:  ", length(f_seq), "\n")
+  cat("  Range:   [", min(f_seq), ", ", max(f_seq), "]\n", sep = "")
+  cat("  Mean:    ", mean(f_seq), "\n")
+  cat("  SD:      ", stats::sd(f_seq), "\n\n")
 
   cat("Base Sequence (g):\n")
-  cat("  Length:  ", length(object$g_seq), "\n")
-  cat("  Range:   [", min(object$g_seq), ", ", max(object$g_seq), "]\n", sep = "")
-  cat("  Mean:    ", mean(object$g_seq), "\n")
-  cat("  SD:      ", stats::sd(object$g_seq), "\n\n")
+  cat("  Length:  ", length(g_seq), "\n")
+  cat("  Range:   [", min(g_seq), ", ", max(g_seq), "]\n", sep = "")
+  cat("  Mean:    ", mean(g_seq), "\n")
+  cat("  SD:      ", stats::sd(g_seq), "\n\n")
 
   cat("Element-wise Products (f[i]*g[i]):\n")
-  cat("  Range:   [", min(object$fg_terms), ", ", max(object$fg_terms), "]\n", sep = "")
-  cat("  Mean:    ", mean(object$fg_terms), "\n")
-  cat("  SD:      ", stats::sd(object$fg_terms), "\n")
+  cat("  Range:   [", min(fg_terms), ", ", max(fg_terms), "]\n", sep = "")
+  cat("  Mean:    ", mean(fg_terms), "\n")
+  cat("  SD:      ", stats::sd(fg_terms), "\n")
 
   invisible(object)
 }
@@ -119,21 +127,27 @@ plot.combine <- function(x, legend_pos = "right", ...) {
 
   idx <- seq_along(x$f_seq)
 
+  # Complex-safety: plot real parts if needed
+  has_complex <- is.complex(x$f_seq) || is.complex(x$g_seq) || is.complex(x$fg_terms)
+  f_plot <- if (has_complex) Re(x$f_seq) else x$f_seq
+  g_plot <- if (has_complex) Re(x$g_seq) else x$g_seq
+  fg_plot <- if (has_complex) Re(x$fg_terms) else x$fg_terms
+
   # Plot 1: Periodic sequence (f)
-  plot(idx, x$f_seq, type = "b", pch = 16, col = "blue",
+  plot(idx, f_plot, type = "b", pch = 16, col = "blue",
        xlab = "Index", ylab = "f[i]", main = "Periodic Sequence (f)")
   graphics::grid()
 
   # Plot 2: Base sequence (g)
-  plot(idx, x$g_seq, type = "b", pch = 16, col = "red",
+  plot(idx, g_plot, type = "b", pch = 16, col = "red",
        xlab = "Index", ylab = "g[i]", main = "Base Sequence (g)")
   graphics::grid()
 
   # Plot 3: Combined view of sequences
-  plot(idx, x$g_seq, type = "l", col = "red", lwd = 2,
+  plot(idx, g_plot, type = "l", col = "red", lwd = 2,
        xlab = "Index", ylab = "Value", main = "Sequence Comparison")
-  graphics::lines(idx, x$f_seq, col = "blue", lwd = 2)
-  graphics::lines(idx, x$fg_terms, col = "purple", lwd = 2, lty = 2)
+  graphics::lines(idx, f_plot, col = "blue", lwd = 2)
+  graphics::lines(idx, fg_plot, col = "purple", lwd = 2, lty = 2)
   graphics::legend(legend_pos,
                    legend = c("f (periodic)", "g (base)", "f*g (product)"),
                    col = c("blue", "red", "purple"),
@@ -141,13 +155,14 @@ plot.combine <- function(x, legend_pos = "right", ...) {
   graphics::grid()
 
   # Plot 4: Running dot product
-  cumsum_fg <- cumsum(x$fg_terms)
+  cumsum_fg <- cumsum(fg_plot)
   plot(idx, cumsum_fg, type = "l", col = "darkgreen", lwd = 3,
        xlab = "Index", ylab = "Cumulative Sum",
-       main = paste("Running Dot Product (Final =", round(x$fg_dot, 3), ")"),
-       ylim = c(0, max(cumsum_fg) * 1.1))
+       main = paste("Running Dot Product (Final =",
+                    round(if (has_complex) Re(x$fg_dot) else x$fg_dot, 3), ")"),
+       ylim = c(min(0, min(cumsum_fg)), max(cumsum_fg) * 1.1))
   graphics::points(idx, cumsum_fg, pch = 16, col = "darkgreen")
-  graphics::abline(h = x$fg_dot, lty = 2, col = "gray40")
+  graphics::abline(h = if (has_complex) Re(x$fg_dot) else x$fg_dot, lty = 2, col = "gray40")
   graphics::grid()
 
   invisible(x)
